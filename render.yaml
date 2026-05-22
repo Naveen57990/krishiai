@@ -4,8 +4,9 @@ services:
     env: python
     region: singapore
     plan: free
-    buildCommand: pip install -r backend/requirements-prod.txt && python -c "from app.db.seed_data import seed_database; import asyncio; asyncio.run(seed_database())"
+    buildCommand: pip install -r requirements-prod.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    workingDir: ./backend
     healthCheckPath: /api/v1/health
     envVars:
       - key: ENVIRONMENT

@@ -22,6 +22,12 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     await init_db()
     logger.info("Database initialized")
+    try:
+        from app.db.seed_data import seed_database
+        await seed_database()
+        logger.info("Seed data checked/applied")
+    except Exception as e:
+        logger.warning(f"Seed data skipped: {e}")
     yield
     await close_db()
     logger.info("Application shutdown")
