@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# Environment
+.env
+.env.local
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/data/
+*.db
+
+# Frontend
+frontend/node_modules/
+frontend/.expo/
+frontend/dist/
+frontend/web-build/
+frontend/npm-debug.log*
+
+# AI/ML models
+ai-services/**/models/*.pkl
+ai-services/**/models/*.pt
+ai-services/**/models/*.h5
+ml-training/data/
+ml-training/models/
+
+# ChromaDB
+**/chroma/
+**/data/chroma/
+**/data/memory/
+
+# Docker
+docker/ssl/
+docker/data/
+
+# Logs
+*.log
+logs/
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+
+# Terraform
+infrastructure/terraform/.terraform/
+infrastructure/terraform/terraform.tfstate*
+infrastructure/terraform/*.tfvars

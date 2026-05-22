@@ -1,0 +1,255 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.crop import Crop, CropDisease
+from app.core.database import async_session_factory
+import asyncio
+
+
+CROPS_DATA = [
+    {
+        "name": "Rice",
+        "name_te": "వరి",
+        "name_hi": "चावल",
+        "scientific_name": "Oryza sativa",
+        "crop_type": "cereal",
+        "season": "kharif",
+        "soil_type": "clay_loam",
+        "min_ph": 5.0,
+        "max_ph": 7.5,
+        "min_rainfall": 1000,
+        "max_rainfall": 2500,
+        "min_temperature": 20,
+        "max_temperature": 35,
+        "growing_period_days": 120,
+        "water_requirement": "high",
+    },
+    {
+        "name": "Wheat",
+        "name_te": "గోధుమ",
+        "name_hi": "गेहूं",
+        "scientific_name": "Triticum aestivum",
+        "crop_type": "cereal",
+        "season": "rabi",
+        "soil_type": "loam",
+        "min_ph": 6.0,
+        "max_ph": 7.5,
+        "min_rainfall": 500,
+        "max_rainfall": 1500,
+        "min_temperature": 10,
+        "max_temperature": 30,
+        "growing_period_days": 150,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Maize",
+        "name_te": "మొక్కజొన్న",
+        "name_hi": "मक्का",
+        "scientific_name": "Zea mays",
+        "crop_type": "cereal",
+        "season": "kharif",
+        "soil_type": "loam",
+        "min_ph": 5.5,
+        "max_ph": 7.5,
+        "min_rainfall": 600,
+        "max_rainfall": 1200,
+        "min_temperature": 18,
+        "max_temperature": 35,
+        "growing_period_days": 110,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Sugarcane",
+        "name_te": "చెరకు",
+        "name_hi": "गन्ना",
+        "scientific_name": "Saccharum officinarum",
+        "crop_type": "cash",
+        "season": "kharif",
+        "soil_type": "clay_loam",
+        "min_ph": 5.5,
+        "max_ph": 8.0,
+        "min_rainfall": 1500,
+        "max_rainfall": 2500,
+        "min_temperature": 20,
+        "max_temperature": 38,
+        "growing_period_days": 365,
+        "water_requirement": "high",
+    },
+    {
+        "name": "Cotton",
+        "name_te": "పత్తి",
+        "name_hi": "कपास",
+        "scientific_name": "Gossypium hirsutum",
+        "crop_type": "cash",
+        "season": "kharif",
+        "soil_type": "black",
+        "min_ph": 6.0,
+        "max_ph": 8.0,
+        "min_rainfall": 600,
+        "max_rainfall": 1500,
+        "min_temperature": 20,
+        "max_temperature": 40,
+        "growing_period_days": 180,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Groundnut",
+        "name_te": "వేరుశనగ",
+        "name_hi": "मूंगफली",
+        "scientific_name": "Arachis hypogaea",
+        "crop_type": "oilseed",
+        "season": "kharif",
+        "soil_type": "sandy_loam",
+        "min_ph": 5.5,
+        "max_ph": 7.0,
+        "min_rainfall": 500,
+        "max_rainfall": 1250,
+        "min_temperature": 20,
+        "max_temperature": 35,
+        "growing_period_days": 120,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Tomato",
+        "name_te": "టమాట",
+        "name_hi": "टमाटर",
+        "scientific_name": "Solanum lycopersicum",
+        "crop_type": "vegetable",
+        "season": "rabi",
+        "soil_type": "loam",
+        "min_ph": 6.0,
+        "max_ph": 7.0,
+        "min_rainfall": 400,
+        "max_rainfall": 1200,
+        "min_temperature": 15,
+        "max_temperature": 35,
+        "growing_period_days": 90,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Potato",
+        "name_te": "బంగాళాదుంప",
+        "name_hi": "आलू",
+        "scientific_name": "Solanum tuberosum",
+        "crop_type": "vegetable",
+        "season": "rabi",
+        "soil_type": "sandy_loam",
+        "min_ph": 5.0,
+        "max_ph": 6.5,
+        "min_rainfall": 500,
+        "max_rainfall": 1000,
+        "min_temperature": 10,
+        "max_temperature": 25,
+        "growing_period_days": 90,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Chilli",
+        "name_te": "మిరప",
+        "name_hi": "मिर्च",
+        "scientific_name": "Capsicum annuum",
+        "crop_type": "spice",
+        "season": "kharif",
+        "soil_type": "loam",
+        "min_ph": 6.0,
+        "max_ph": 7.5,
+        "min_rainfall": 600,
+        "max_rainfall": 1200,
+        "min_temperature": 18,
+        "max_temperature": 35,
+        "growing_period_days": 150,
+        "water_requirement": "medium",
+    },
+    {
+        "name": "Onion",
+        "name_te": "ఉల్లి",
+        "name_hi": "प्याज",
+        "scientific_name": "Allium cepa",
+        "crop_type": "vegetable",
+        "season": "rabi",
+        "soil_type": "loam",
+        "min_ph": 6.0,
+        "max_ph": 7.0,
+        "min_rainfall": 600,
+        "max_rainfall": 800,
+        "min_temperature": 10,
+        "max_temperature": 35,
+        "growing_period_days": 120,
+        "water_requirement": "medium",
+    },
+]
+
+DISEASES_DATA = [
+    {
+        "crop_id": 1,
+        "disease_name": "Rice Blast",
+        "disease_name_te": "వరి బ్లాస్ట్",
+        "disease_name_hi": "चावल का झुलसा रोग",
+        "description": "Fungal disease caused by Magnaporthe oryzae affecting leaves, nodes, and panicles.",
+        "symptoms": {"leaves": "Diamond-shaped lesions with gray centers and brown margins", "nodes": "Dark brown to black lesions on nodes", "panicle": "Neck rot with white to gray mold"},
+        "causes": "High humidity, excess nitrogen, continuous rice cropping",
+        "treatment": "Apply tricyclazole 75% WP at 0.6g/L or carbendazim 50% WP at 1g/L",
+        "treatment_te": "ట్రైసైక్లాజోల్ 75% WP 0.6g/L లేదా కార్బెండజిమ్ 50% WP 1g/L వాడండి",
+        "treatment_hi": "ट्राईसाइक्लाजोल 75% WP 0.6g/L या कार्बेन्डाजिम 50% WP 1g/L का प्रयोग करें",
+        "prevention": "Use resistant varieties, avoid excess nitrogen, proper field drainage",
+        "organic_treatment": "Neem oil 3% spray, Trichoderma viride seed treatment",
+        "chemical_treatment": "Tricyclazole 75% WP 0.6g/L, Carbendazim 50% WP 1g/L",
+        "severity": "high",
+    },
+    {
+        "crop_id": 1,
+        "disease_name": "Bacterial Leaf Blight",
+        "disease_name_te": "బాక్టీరియల్ లీఫ్ బ్లైట్",
+        "disease_name_hi": "जीवाणु पत्ती झुलसा",
+        "description": "Bacterial disease caused by Xanthomonas oryzae pv. oryzae.",
+        "symptoms": {"leaves": "Water-soaked lesions turning yellow to straw-colored with wavy margins"},
+        "causes": "High humidity, rain, standing water, wounding of leaves",
+        "treatment": "Apply streptomycin sulfate 0.025% + copper oxychloride 0.2%",
+        "treatment_te": "స్ట్రెప్టోమైసిన్ సల్ఫేట్ 0.025% + కాపర్ ఆక్సీక్లోరైడ్ 0.2% వాడండి",
+        "treatment_hi": "स्ट्रेप्टोमाइसिन सल्फेट 0.025% + कॉपर ऑक्सीक्लोराइड 0.2% का प्रयोग करें",
+        "prevention": "Use resistant varieties, avoid flooding, balanced fertilization",
+        "organic_treatment": "Copper hydroxide spray, botanical extracts",
+        "chemical_treatment": "Streptomycin sulfate + Copper oxychloride",
+        "severity": "high",
+    },
+    {
+        "crop_id": 7,
+        "disease_name": "Early Blight",
+        "disease_name_te": "ప్రారంభ మచ్చ",
+        "disease_name_hi": "अगेती झुलसा",
+        "description": "Fungal disease caused by Alternaria solani affecting tomato and potato.",
+        "symptoms": {"leaves": "Dark brown spots with concentric rings, target board pattern", "stems": "Dark lesions on stems", "fruit": "Dark sunken lesions near stem end"},
+        "causes": "Warm humid weather, poor air circulation, infected debris",
+        "treatment": "Apply chlorothalonil 2g/L or mancozeb 2g/L every 7-10 days",
+        "treatment_te": "క్లోరోథలోనిల్ 2g/L లేదా మాంకోజెబ్ 2g/L ప్రతి 7-10 రోజులకు వాడండి",
+        "treatment_hi": "क्लोरोथालोनिल 2g/L या मैंकोजेब 2g/L हर 7-10 दिन में प्रयोग करें",
+        "prevention": "Crop rotation, resistant varieties, proper spacing, staking",
+        "organic_treatment": "Baking soda spray (1tsp/L), neem oil, copper fungicide",
+        "chemical_treatment": "Chlorothalonil 2g/L, Mancozeb 2g/L, Difenoconazole 1mL/L",
+        "severity": "medium",
+    },
+]
+
+
+async def seed_database():
+    async with async_session_factory() as session:
+        from sqlalchemy import select, func
+        result = await session.execute(select(func.count(Crop.id)))
+        count = result.scalar()
+        if count > 0:
+            print("Database already seeded")
+            return
+
+        for crop_data in CROPS_DATA:
+            crop = Crop(**crop_data)
+            session.add(crop)
+        await session.flush()
+
+        for disease_data in DISEASES_DATA:
+            disease = CropDisease(**disease_data)
+            session.add(disease)
+
+        await session.commit()
+        print("Database seeded successfully")
+
+
+if __name__ == "__main__":
+    asyncio.run(seed_database())

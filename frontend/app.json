@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "KrishiAI",
+    "slug": "krishiai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2D6A4F"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.krishiai.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2D6A4F"
+      },
+      "package": "com.krishiai.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "KrishiAI needs access to your photos to detect crop diseases.",
+          "cameraPermission": "KrishiAI needs camera access to capture plant images for disease detection."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "KrishiAI needs camera access to capture plant images."
+        }
+      ]
+    ]
+  }
+}

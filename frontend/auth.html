@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#f5f7f4">
+<title>KrishiAI — Sign Up</title>
+<style>
+:root {
+  --bg: #f5f7f4;
+  --surface: #ffffff;
+  --fg: #2d3436;
+  --muted: #636e72;
+  --border: #e2e8e4;
+  --accent: #00b894;
+  --accent-dark: #00a381;
+  --accent-bg: rgba(0,184,148,.08);
+  --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-body);background:var(--bg);color:var(--fg);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.2}
+[data-lang]{display:none}
+[data-lang="en"]{display:var(--display-en,block)}
+[data-lang="te"]{display:var(--display-te,none)}
+[data-lang="hi"]{display:var(--display-hi,none)}
+html.lang-te{--display-en:none;--display-te:block;--display-hi:none}
+html.lang-hi{--display-en:none;--display-te:none;--display-hi:block}
+
+.auth-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;padding:40px 32px;max-width:400px;width:100%;
+  box-shadow:0 4px 24px rgba(0,0,0,.04);
+}
+.auth-logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:8px}
+.auth-logo svg{width:36px;height:36px}
+.auth-logo span{font-family:var(--font-display);font-size:24px;font-weight:700}
+.auth-title{font-size:24px;text-align:center;margin-bottom:4px}
+.auth-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:28px}
+
+.tab-row{display:flex;gap:0;margin-bottom:24px;background:var(--bg);border-radius:12px;padding:4px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s}
+.tab.active{background:var(--surface);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.form-group input{
+  width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;
+  font-size:15px;background:var(--bg);outline:none;transition:border-color .2s;
+}
+.form-group input:focus{border-color:var(--accent)}
+
+.btn-primary{
+  width:100%;padding:14px;background:var(--accent);color:#fff;
+  border:none;border-radius:12px;font-size:16px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+
+.auth-divider{text-align:center;margin:20px 0;font-size:13px;color:var(--muted);position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
+.auth-divider::before{left:0}
+.auth-divider::after{right:0}
+
+.lang-bar{
+  position:fixed;top:16px;right:16px;z-index:100;
+  display:flex;gap:4px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:3px;
+}
+.lang-bar button{padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;transition:all .2s}
+.lang-bar button.active{background:var(--accent);color:#fff}
+
+.back-link{
+  position:fixed;top:16px;left:16px;z-index:100;
+  padding:8px 14px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;font-size:13px;font-weight:500;color:var(--fg);
+  text-decoration:none;cursor:pointer;transition:all .2s;
+}
+.back-link:hover{border-color:var(--accent)}
+
+.alert{
+  padding:12px;border-radius:10px;font-size:13px;margin-bottom:16px;
+  display:none;
+}
+.alert.error{display:block;background:rgba(225,112,85,.1);color:#c0392b;border:1px solid rgba(225,112,85,.2)}
+.alert.success{display:block;background:rgba(0,184,148,.1);color:var(--accent-dark);border:1px solid rgba(0,184,148,.2)}
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <button data-lang-btn="en" class="active">EN</button>
+  <button data-lang-btn="te">TE</button>
+  <button data-lang-btn="hi">HI</button>
+</div>
+<a href="index.html" class="back-link">← <span data-lang="en">Home</span><span data-lang="te">హోమ్</span><span data-lang="hi">होम</span></a>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="10" fill="var(--accent)"/><path d="M18 9l-7 12h14L18 9z" fill="#fff"/><rect x="14" y="23" width="8" height="5" rx="1.5" fill="#fff" opacity=".6"/></svg>
+    <span>KrishiAI</span>
+  </div>
+  <div class="auth-title" data-lang="en">Welcome</div>
+  <div class="auth-title" data-lang="te">స్వాగతం</div>
+  <div class="auth-title" data-lang="hi">स्वागत है</div>
+  <div class="auth-sub" data-lang="en">Create an account or sign in to continue</div>
+  <div class="auth-sub" data-lang="te">కొనసాగించడానికి ఖాతాను సృష్టించండి లేదా సైన్ ఇన్ చేయండి</div>
+  <div class="auth-sub" data-lang="hi">जारी रखने के लिए खाता बनाएं या साइन इन करें</div>
+
+  <div id="authAlert" class="alert"></div>
+
+  <div class="tab-row" id="authTabs">
+    <div class="tab active" onclick="switchTab('signup')">
+      <span data-lang="en">Sign Up</span><span data-lang="te">సైన్ అప్</span><span data-lang="hi">साइन अप</span>
+    </div>
+    <div class="tab" onclick="switchTab('login')">
+      <span data-lang="en">Log In</span><span data-lang="te">లాగిన్</span><span data-lang="hi">लॉग इन</span>
+    </div>
+  </div>
+
+  <div id="form-signup">
+    <div class="form-group">
+      <label data-lang="en">Full Name</label><label data-lang="te">పూర్తి పేరు</label><label data-lang="hi">पूरा नाम</label>
+      <input type="text" placeholder="Ramesh Reddy" id="signupName">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" placeholder="ramesh@example.com" id="signupEmail">
+    </div>
+    <div class="form-group">
+      <label data-lang="en">Phone</label><label data-lang="te">ఫోన్</label><label data-lang="hi">फोन</label>
+      <input type="tel" placeholder="+91 98765 43210" id="signupPhone">
+    </div>
+    <div class="form-group">
+      <label data-lang="en">Password</label><label data-lang="te">పాస్‌వర్డ్</label><label data-lang="hi">पासवर्ड</label>
+      <input type="password" placeholder="••••••••" id="signupPassword">
+    </div>
+    <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
+      <span data-lang="en">Create Account</span><span data-lang="te">ఖాతా సృష్టించండి</span><span data-lang="hi">खाता बनाएं</span>
+    </button>
+  </div>
+
+  <div id="form-login" style="display:none">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" placeholder="ramesh@example.com" id="loginEmail">
+    </div>
+    <div class="form-group">
+      <label data-lang="en">Password</label><label data-lang="te">పాస్‌వర్డ్</label><label data-lang="hi">पासवर्ड</label>
+      <input type="password" placeholder="••••••••" id="loginPassword">
+    </div>
+    <div style="text-align:right;margin-bottom:16px">
+      <a href="#" style="font-size:13px;color:var(--accent);text-decoration:none" data-lang="en">Forgot password?</a>
+      <a href="#" style="font-size:13px;color:var(--accent);text-decoration:none" data-lang="te">పాస్‌వర్డ్ మర్చిపోయారా?</a>
+      <a href="#" style="font-size:13px;color:var(--accent);text-decoration:none" data-lang="hi">पासवर्ड भूल गए?</a>
+    </div>
+    <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
+      <span data-lang="en">Sign In</span><span data-lang="te">సైన్ ఇన్</span><span data-lang="hi">साइन इन</span>
+    </button>
+  </div>
+
+  <div class="auth-divider">
+    <span data-lang="en">or continue with</span>
+    <span data-lang="te">లేదా దీనితో కొనసాగించండి</span>
+    <span data-lang="hi">या इसके साथ जारी रखें</span>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px" data-lang="en">By continuing, you agree to our Terms and Privacy Policy.</p>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px" data-lang="te">కొనసాగించడం ద్వారా, మీరు మా నిబంధనలు మరియు గోప్యతా విధానాన్ని అంగీకరిస్తారు.</p>
+  <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px" data-lang="hi">जारी रखने से, आप हमारी शर्तों और गोपनीयता नीति से सहमत होते हैं।</p>
+</div>
+
+<script src="api.js"></script>
+<script>
+function showAlert(msg, type) {
+  const el = document.getElementById('authAlert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('authAlert').style.display = 'none';
+}
+
+async function handleSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const phone = document.getElementById('signupPhone').value.trim();
+  const password = document.getElementById('signupPassword').value;
+
+  if (!name || !email || !phone || !password) {
+    showAlert(getLangText('Please fill all fields', 'దయచేసి అన్ని ఫీల్డ్‌లను పూరించండి', 'कृपया सभी फ़ील्ड भरें'), 'error');
+    return;
+  }
+  if (password.length < 8) {
+    showAlert(getLangText('Password must be at least 8 characters', 'పాస్‌వర్డ్ కనీసం 8 అక్షరాలు ఉండాలి', 'पासवर्ड कम से कम 8 अक्षर का होना चाहिए'), 'error');
+    return;
+  }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true;
+  btn.innerHTML = getLangText('Creating...', 'సృష్టిస్తోంది...', 'बना रहा है...');
+
+  try {
+    await api.signup({ full_name: name, email, phone, password, preferred_language: getCurrentLang() });
+    showAlert(getLangText('Account created! Please sign in.', 'ఖాతా సృష్టించబడింది! దయచేసి సైన్ ఇన్ చేయండి.', 'खाता बन गया! कृपया साइन इन करें।'), 'success');
+    switchTab('login');
+  } catch (err) {
+    showAlert(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = getLangText('Create Account', 'ఖాతా సృష్టించండి', 'खाता बनाएं');
+  }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) {
+    showAlert(getLangText('Please fill all fields', 'దయచేసి అన్ని ఫీల్డ్‌లను పూరించండి', 'कृपया सभी फ़ील्ड भरें'), 'error');
+    return;
+  }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = getLangText('Signing in...', 'సైన్ ఇన్ చేస్తోంది...', 'साइन इन कर रहा है...');
+
+  try {
+    const result = await api.login({ email, password });
+    const profile = await api.getProfile();
+    localStorage.setItem('krishi_user', JSON.stringify(profile));
+    window.location.href = 'app.html';
+  } catch (err) {
+    showAlert(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = getLangText('Sign In', 'సైన్ ఇన్', 'साइन इन');
+  }
+}
+
+function getCurrentLang() {
+  return document.documentElement.className === 'lang-te' ? 'te' : document.documentElement.className === 'lang-hi' ? 'hi' : 'en';
+}
+
+function getLangText(en, te, hi) {
+  const lang = getCurrentLang();
+  if (lang === 'te') return te;
+  if (lang === 'hi') return hi;
+  return en;
+}
+
+document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-lang-btn]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const lang = btn.dataset.langBtn;
+    document.documentElement.className = lang === 'en' ? '' : 'lang-' + lang;
+    localStorage.setItem('krishi-lang', lang);
+  });
+});
+const lang = localStorage.getItem('krishi-lang');
+if (lang && lang !== 'en') {
+  document.documentElement.className = 'lang-' + lang;
+  document.querySelector(`[data-lang-btn="${lang}"]`)?.classList.add('active');
+  document.querySelector('[data-lang-btn="en"]')?.classList.remove('active');
+}
+</script>
+</body>
+</html>

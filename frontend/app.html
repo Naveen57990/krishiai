@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#f5f7f4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<title>KrishiAI — App</title>
+<style>
+:root {
+  --bg: #f5f7f4;
+  --surface: #ffffff;
+  --fg: #2d3436;
+  --muted: #636e72;
+  --border: #e2e8e4;
+  --accent: #00b894;
+  --accent-light: #55efc4;
+  --accent-dark: #00a381;
+  --accent-bg: rgba(0,184,148,.08);
+  --warn: #fdcb6e;
+  --danger: #e17055;
+  --success: #00b894;
+  --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --header-h: 56px;
+  --nav-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--fg);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;line-height:1.2}
+[data-lang]{display:none}
+[data-lang="en"]{display:var(--display-en,block)}
+[data-lang="te"]{display:var(--display-te,none)}
+[data-lang="hi"]{display:var(--display-hi,none)}
+html.lang-te{--display-en:none;--display-te:block;--display-hi:none}
+html.lang-hi{--display-en:none;--display-te:none;--display-hi:block}
+
+.app-header{
+  height:var(--header-h);display:flex;align-items:center;
+  padding:0 16px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.app-header h1{font-size:18px;font-weight:600}
+.lang-toggle{
+  margin-left:auto;display:flex;gap:2px;
+  background:var(--bg);border-radius:8px;padding:2px;
+}
+.lang-toggle button{
+  padding:4px 8px;border-radius:6px;font-size:11px;font-weight:600;
+  color:var(--muted);transition:all .2s;cursor:pointer;
+}
+.lang-toggle button.active{background:var(--accent);color:#fff}
+.lang-toggle button:hover:not(.active){color:var(--accent)}
+.offline-banner{display:none;background:var(--danger);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:500;position:sticky;top:0;z-index:200}
+.offline-banner.show{display:block}
+
+.screen{display:none;height:calc(100vh - var(--header-h) - var(--nav-h) - var(--safe-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.active{display:block}
+.screen-inner{padding:16px;padding-bottom:24px;max-width:600px;margin:0 auto}
+
+.bottom-nav{
+  height:calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);
+  display:flex;background:var(--surface);
+  border-top:1px solid var(--border);
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-size:10px;font-weight:500;color:var(--muted);
+  padding:4px 0;transition:color .2s;cursor:pointer;
+}
+.nav-item .nav-icon{font-size:20px;line-height:1}
+.nav-item.active{color:var(--accent)}
+.nav-item:hover{color:var(--fg)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:8px}
+.card-value{font-size:28px;font-weight:700;font-family:var(--font-display);color:var(--fg)}
+.card-label{font-size:12px;color:var(--muted);margin-top:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:500}
+.badge-success{background:rgba(0,184,148,.1);color:var(--accent-dark)}
+.badge-warn{background:rgba(253,203,110,.15);color:#b8860b}
+.badge-danger{background:rgba(225,112,85,.12);color:#c0392b}
+
+.weather-main{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.weather-temp{font-size:44px;font-weight:700;font-family:var(--font-display);line-height:1}
+.weather-detail{font-size:14px;color:var(--muted)}
+.weather-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.weather-item{padding:8px 4px}
+.weather-item .val{font-size:16px;font-weight:600}
+.weather-item .lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+.alert-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.alert-item:last-child{border-bottom:none}
+.alert-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.alert-text{flex:1}
+.alert-text .title{font-size:14px;font-weight:600}
+.alert-text .desc{font-size:12px;color:var(--muted);margin-top:2px}
+.alert-text .time{font-size:11px;color:var(--muted);margin-top:4px;opacity:.7}
+
+.upload-area{
+  border:2px dashed var(--border);border-radius:20px;
+  padding:48px 24px;text-align:center;cursor:pointer;
+  transition:all .3s;margin-bottom:16px;
+}
+.upload-area:hover{border-color:var(--accent);background:var(--accent-bg)}
+.upload-area .icon{font-size:48px;margin-bottom:12px}
+.upload-area p{font-size:15px;color:var(--muted)}
+.upload-area .sub{font-size:12px;color:var(--muted);margin-top:4px;opacity:.7}
+
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
+.result-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.result-header .status-dot{width:10px;height:10px;border-radius:50%}
+.result-header .status-dot.success{background:var(--success)}
+.result-header .status-dot.warn{background:var(--warn)}
+.result-header .status-dot.danger{background:var(--danger)}
+.result-name{font-size:16px;font-weight:600}
+.result-confidence{font-size:13px;color:var(--muted)}
+.treatment-list{list-style:none;padding:0}
+.treatment-list li{padding:8px 0;font-size:14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}
+.treatment-list li:last-child{border-bottom:none}
+.treatment-list li::before{content:'•';color:var(--accent);font-weight:700}
+
+.chat-box{display:flex;flex-direction:column;gap:12px;padding-bottom:12px;flex:1;overflow-y:auto}
+.chat-msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.5}
+.chat-msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.chat-msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-input-bar{display:flex;gap:8px;padding:12px 0;background:var(--bg)}
+.chat-input-bar input{
+  flex:1;padding:12px 16px;border:1px solid var(--border);
+  border-radius:14px;font-size:15px;background:var(--surface);
+  outline:none;transition:border-color .2s;
+}
+.chat-input-bar input:focus{border-color:var(--accent)}
+.chat-input-bar button{
+  width:48px;height:48px;border-radius:14px;
+  background:var(--accent);color:#fff;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .2s;cursor:pointer;
+}
+.chat-input-bar button:hover{background:var(--accent-dark)}
+.chat-input-bar button:disabled{opacity:.5}
+
+.voice-btn-wrap{text-align:center;padding:40px 0}
+.voice-btn{
+  width:100px;height:100px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:40px;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .3s;box-shadow:0 4px 20px rgba(0,184,148,.3);cursor:pointer;
+}
+.voice-btn.listening{animation:pulse 1.5s ease-in-out infinite;background:var(--danger)}
+.voice-btn:hover{transform:scale(1.05)}
+@keyframes pulse{0%,100%{box-shadow:0 4px 20px rgba(0,184,148,.3)}50%{box-shadow:0 4px 40px rgba(0,184,148,.5)}}
+.voice-status{font-size:15px;color:var(--muted);margin-top:16px}
+.voice-lang-btns{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+.voice-lang-btns button{
+  padding:8px 18px;border-radius:10px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);color:var(--muted);transition:all .2s;cursor:pointer;
+}
+.voice-lang-btns button.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+.transcript-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-top:16px;min-height:80px;
+  font-size:15px;color:var(--fg);
+}
+
+.profile-header{text-align:center;padding:24px 0}
+.profile-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--accent-bg);color:var(--accent);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:32px;margin-bottom:12px;
+}
+.profile-name{font-size:20px;font-weight:600}
+.profile-email{font-size:13px;color:var(--muted)}
+.profile-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.profile-stat{text-align:center;padding:12px;background:var(--bg);border-radius:12px}
+.profile-stat .num{font-size:20px;font-weight:700;color:var(--accent)}
+.profile-stat .lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.profile-item{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.profile-item:last-child{border-bottom:none}
+.profile-item .pi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.profile-item .pi-text{flex:1}
+.profile-item .pi-text .pi-title{font-size:15px;font-weight:500}
+.profile-item .pi-text .pi-sub{font-size:12px;color:var(--muted)}
+.profile-item .pi-arrow{color:var(--muted);font-size:14px}
+
+.crop-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+.crop-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.crop-info{flex:1}
+.crop-info h4{font-size:16px;margin-bottom:2px}
+.crop-info p{font-size:12px;color:var(--muted)}
+.crop-profit{text-align:right}
+.crop-profit .val{font-size:16px;font-weight:700;color:var(--success)}
+.crop-profit .lbl{font-size:11px;color:var(--muted)}
+.crop-risk{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500}
+.crop-risk.low{background:rgba(0,184,148,.1);color:var(--accent-dark)}
+.crop-risk.med{background:rgba(253,203,110,.15);color:#b8860b}
+.crop-risk.high{background:rgba(225,112,85,.12);color:#c0392b}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--fg)}
+.form-group input,.form-group select{
+  width:100%;padding:12px 14px;border:1px solid var(--border);
+  border-radius:12px;font-size:15px;background:var(--surface);
+  outline:none;transition:border-color .2s;
+}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+
+.chart-placeholder{height:160px;background:var(--accent-bg);border-radius:16px;display:flex;align-items:flex-end;justify-content:center;gap:12px;padding:16px}
+.chart-bar{width:24px;border-radius:4px 4px 0 0;background:var(--accent);opacity:.6;transition:height .5s}
+.chart-bar.highlight{opacity:1;background:var(--accent-dark)}
+
+.btn-primary{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.section-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.fade-in{animation:fadeIn .4s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.section-spacer{height:24px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1 id="screenTitle">KrishiAI</h1>
+  <div class="lang-toggle">
+    <button data-lang-btn="en" class="active">EN</button>
+    <button data-lang-btn="te">TE</button>
+    <button data-lang-btn="hi">HI</button>
+  </div>
+</div>
+<div class="offline-banner" id="offlineBanner">
+  <span data-lang="en">You are offline. Some features may be unavailable.</span>
+  <span data-lang="te">మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. కొన్ని ఫీచర్లు అందుబాటులో ఉండకపోవచ్చు.</span>
+  <span data-lang="hi">आप ऑफ़लाइन हैं। कुछ सुविधाएं उपलब्ध नहीं हो सकती हैं।</span>
+</div>
+
+<!-- Screen: Dashboard -->
+<div class="screen active" id="screen-dashboard">
+  <div class="screen-inner fade-in">
+    <div class="card" id="weatherWidget">
+      <div style="text-align:center;padding:20px"><div class="spinner"></div><p style="margin-top:8px;color:var(--muted);font-size:14px">Loading weather...</p></div>
+    </div>
+    <div class="section-label" data-lang="en">Alerts</div>
+    <div class="section-label" data-lang="te">హెచ్చరికలు</div>
+    <div class="section-label" data-lang="hi">सूचनाएं</div>
+    <div class="card" id="alertsContainer">
+      <div style="text-align:center;padding:12px"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Screen: Disease Scan -->
+<div class="screen" id="screen-disease">
+  <div class="screen-inner fade-in">
+    <div class="upload-area" onclick="document.getElementById('photoInput').click()" id="uploadArea">
+      <div class="icon">📷</div>
+      <p data-lang="en">Take a photo of your crop</p>
+      <p data-lang="te">మీ పంట ఫోటో తీయండి</p>
+      <p data-lang="hi">अपनी फसल की फोटो लें</p>
+      <div class="sub" data-lang="en">or tap to upload from gallery</div>
+      <div class="sub" data-lang="te">లేదా గ్యాలరీ నుండి అప్‌లోడ్ చేయడానికి నొక్కండి</div>
+      <div class="sub" data-lang="hi">या गैलरी से अपलोड करने के लिए टैप करें</div>
+    </div>
+    <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none" onchange="handlePhoto(event)">
+
+    <div id="scanResult" style="display:none"></div>
+    <div id="scanLoading" style="display:none;text-align:center;padding:20px">
+      <div class="spinner" style="width:32px;height:32px"></div>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="en">Analyzing image...</p>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="te">చిత్రాన్ని విశ్లేషిస్తోంది...</p>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="hi">चित्र का विश्लेषण कर रहा है...</p>
+    </div>
+    <div id="scanHistory"><div class="section-label" data-lang="en">Recent Scans</div><div class="section-label" data-lang="te">ఇటీవలి స్కాన్‌లు</div><div class="section-label" data-lang="hi">हाल के स्कैन</div></div>
+  </div>
+</div>
+
+<!-- Screen: Chatbot -->
+<div class="screen" id="screen-chat">
+  <div class="screen-inner fade-in" style="display:flex;flex-direction:column;height:100%;padding-bottom:0">
+    <div class="chat-box" id="chatBox">
+      <div class="chat-msg bot">
+        <span data-lang="en">👋 Hello! I'm KrishiAI. Ask me anything about farming.</span>
+        <span data-lang="te">👋 నమస్కారం! నేను KrishiAI ని. వ్యవసాయం గురించి నన్ను అడగండి.</span>
+        <span data-lang="hi">👋 नमस्ते! मैं KrishiAI हूँ। कृषि के बारे में मुझसे पूछें।</span>
+      </div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chatInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button id="chatSendBtn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen: Voice Assistant -->
+<div class="screen" id="screen-voice">
+  <div class="screen-inner fade-in" style="text-align:center">
+    <div class="voice-lang-btns">
+      <button class="active" onclick="setVoiceLang('en',this)">English</button>
+      <button onclick="setVoiceLang('te',this)">తెలుగు</button>
+      <button onclick="setVoiceLang('hi',this)">हिन्दी</button>
+    </div>
+    <div class="voice-btn-wrap">
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+    </div>
+    <div class="voice-status" id="voiceStatus" data-lang="en">Tap the microphone to start</div>
+    <div class="transcript-box" id="transcriptBox">
+      <span data-lang="en">Your speech will appear here...</span>
+      <span data-lang="te">మీ ప్రసంగం ఇక్కడ కనిపిస్తుంది...</span>
+      <span data-lang="hi">आपका भाषण यहां दिखाई देगा...</span>
+    </div>
+    <div id="voiceResult" style="margin-top:16px;display:none">
+      <div class="result-card"><div id="voiceResponseText"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Screen: Crops -->
+<div class="screen" id="screen-crops">
+  <div class="screen-inner fade-in">
+    <div class="card" id="cropFormCard">
+      <div class="card-title" data-lang="en">Farm Parameters</div>
+      <div class="card-title" data-lang="te">వ్యవసాయ పారామితులు</div>
+      <div class="card-title" data-lang="hi">कृषि पैरामीटर</div>
+      <div class="form-group">
+        <label data-lang="en">Soil Type</label>
+        <label data-lang="te">నేల రకం</label>
+        <label data-lang="hi">मिट्टी का प्रकार</label>
+        <select id="cropSoilType">
+          <option value="clay">Clay</option>
+          <option value="loam" selected>Loam</option>
+          <option value="sandy">Sandy</option>
+          <option value="silty">Silty</option>
+          <option value="peaty">Peaty</option>
+          <option value="chalky">Chalky</option>
+          <option value="saline">Saline</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>pH Level</label>
+          <input type="number" step="0.1" min="0" max="14" value="6.5" id="cropPh">
+        </div>
+        <div class="form-group">
+          <label data-lang="en">Season</label>
+          <label data-lang="te">సీజన్</label>
+          <label data-lang="hi">मौसम</label>
+          <select id="cropSeason">
+            <option value="kharif">Kharif</option>
+            <option value="rabi">Rabi</option>
+            <option value="zaid">Zaid</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label data-lang="en">Rainfall (mm)</label>
+          <label data-lang="te">వర్షపాతం (మి.మీ)</label>
+          <label data-lang="hi">वर्षा (मिमी)</label>
+          <input type="number" step="1" min="0" value="850" id="cropRainfall">
+        </div>
+        <div class="form-group">
+          <label data-lang="en">Temperature (°C)</label>
+          <label data-lang="te">ఉష్ణోగ్రత (°C)</label>
+          <label data-lang="hi">तापमान (°C)</label>
+          <input type="number" step="1" min="-10" max="60" value="28" id="cropTemp">
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-lang="en">Location</label>
+        <label data-lang="te">స్థానం</label>
+        <label data-lang="hi">स्थान</label>
+        <input type="text" value="Hyderabad" id="cropLocation">
+      </div>
+      <button class="btn-primary" id="cropSubmitBtn" onclick="submitCropForm()" style="margin-top:4px">
+        <span data-lang="en">Get Recommendations</span>
+        <span data-lang="te">సిఫార్సులు పొందండి</span>
+        <span data-lang="hi">सिफारिशें प्राप्त करें</span>
+      </button>
+    </div>
+    <div id="cropResults" style="display:none">
+      <div class="section-label" data-lang="en">Recommended Crops</div>
+      <div class="section-label" data-lang="te">సిఫార్సు చేసిన పంటలు</div>
+      <div class="section-label" data-lang="hi">अनुशंसित फसलें</div>
+      <div id="cropRecommendations"></div>
+      <div class="section-label" data-lang="en">Yield Prediction</div>
+      <div class="section-label" data-lang="te">దిగుబడి అంచనా</div>
+      <div class="section-label" data-lang="hi">उपज अनुमान</div>
+      <div class="card" id="yieldCard">
+        <div style="text-align:center;padding:12px"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div id="cropLoading" style="display:none;text-align:center;padding:20px">
+      <div class="spinner" style="width:32px;height:32px"></div>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="en">Analyzing farm data...</p>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="te">వ్యవసాయ డేటాను విశ్లేషిస్తోంది...</p>
+      <p style="margin-top:12px;color:var(--muted)" data-lang="hi">कृषि डेटा का विश्लेषण कर रहा है...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Screen: Profile -->
+<div class="screen" id="screen-profile">
+  <div class="screen-inner fade-in">
+    <div class="profile-header" id="profileHeader">
+      <div class="profile-avatar">👨‍🌾</div>
+      <div class="profile-name">KrishiAI User</div>
+      <div class="profile-email">user@krishi.ai</div>
+    </div>
+    <div class="profile-stat-row" id="profileStats">
+      <div class="profile-stat"><div class="num">--</div><div class="lbl" data-lang="en">Scans</div><div class="lbl" data-lang="te">స్కాన్‌లు</div><div class="lbl" data-lang="hi">स्कैन</div></div>
+      <div class="profile-stat"><div class="num">--</div><div class="lbl" data-lang="en">Chats</div><div class="lbl" data-lang="te">చాట్‌లు</div><div class="lbl" data-lang="hi">चैट</div></div>
+      <div class="profile-stat"><div class="num">--</div><div class="lbl" data-lang="en">Predictions</div><div class="lbl" data-lang="te">అంచనాలు</div><div class="lbl" data-lang="hi">अनुमान</div></div>
+    </div>
+    <div class="card" style="padding:8px 16px">
+      <div class="profile-item" onclick="api.logout()">
+        <div class="pi-icon" style="background:rgba(225,112,85,.12)">🚪</div>
+        <div class="pi-text"><div class="pi-title" style="color:var(--danger)" data-lang="en">Sign Out</div><div class="pi-title" style="color:var(--danger)" data-lang="te">సైన్ అవుట్</div><div class="pi-title" style="color:var(--danger)" data-lang="hi">साइन आउट</div></div>
+        <div class="pi-arrow">›</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" data-nav="dashboard"><span class="nav-icon">🏠</span><span data-lang="en">Home</span><span data-lang="te">హోమ్</span><span data-lang="hi">होम</span></button>
+  <button class="nav-item" data-nav="disease"><span class="nav-icon">🔍</span><span data-lang="en">Scan</span><span data-lang="te">స్కాన్</span><span data-lang="hi">स्कैन</span></button>
+  <button class="nav-item" data-nav="chat"><span class="nav-icon">💬</span><span data-lang="en">Chat</span><span data-lang="te">చాట్</span><span data-lang="hi">चैट</span></button>
+  <button class="nav-item" data-nav="voice"><span class="nav-icon">🎤</span><span data-lang="en">Voice</span><span data-lang="te">వాయిస్</span><span data-lang="hi">वॉइस</span></button>
+  <button class="nav-item" data-nav="crops"><span class="nav-icon">🌱</span><span data-lang="en">Crops</span><span data-lang="te">పంటలు</span><span data-lang="hi">फसलें</span></button>
+  <button class="nav-item" data-nav="profile"><span class="nav-icon">👤</span><span data-lang="en">Profile</span><span data-lang="te">ప్రొఫైల్</span><span data-lang="hi">प्रोफ़ाइल</span></button>
+</div>
+
+<script src="api.js"></script>
+<script>
+// ===== LANG TOGGLE =====
+function getCurrentLang() {
+  return document.documentElement.className === 'lang-te' ? 'te' : document.documentElement.className === 'lang-hi' ? 'hi' : 'en';
+}
+document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-lang-btn]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const lang = btn.dataset.langBtn;
+    document.documentElement.className = lang === 'en' ? '' : 'lang-' + lang;
+    localStorage.setItem('krishi-lang', lang);
+  });
+});
+const savedLang = localStorage.getItem('krishi-lang');
+if (savedLang && savedLang !== 'en') {
+  document.documentElement.className = 'lang-' + savedLang;
+  document.querySelector(`[data-lang-btn="${savedLang}"]`)?.classList.add('active');
+  document.querySelector('[data-lang-btn="en"]')?.classList.remove('active');
+}
+
+// ===== NAVIGATION =====
+const screenTitles = { dashboard:'KrishiAI', disease:'Disease Detection', chat:'AI Chatbot', voice:'Voice Assistant', crops:'Crop Recommendations', profile:'Profile' };
+const screenTitlesTe = { dashboard:'KrishiAI', disease:'వ్యాధి గుర్తింపు', chat:'AI చాట్‌బాట్', voice:'వాయిస్ అసిస్టెంట్', crops:'పంట సిఫార్సులు', profile:'ప్రొఫైల్' };
+const screenTitlesHi = { dashboard:'KrishiAI', disease:'रोग पहचान', chat:'AI चैटबॉट', voice:'वॉइस असिस्टेंट', crops:'फसल सिफारिशें', profile:'प्रोफ़ाइल' };
+let currentScreen = 'dashboard';
+let chatSessionId = 'session_' + Date.now();
+
+function navigate(screen) {
+  currentScreen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`[data-nav="${screen}"]`)?.classList.add('active');
+  const lang = getCurrentLang();
+  const titles = lang === 'te' ? screenTitlesTe : lang === 'hi' ? screenTitlesHi : screenTitles;
+  document.getElementById('screenTitle').textContent = titles[screen] || 'KrishiAI';
+  if (screen === 'dashboard') loadDashboard();
+  if (screen === 'disease') loadDiseaseHistory();
+  if (screen === 'crops') loadCropData();
+  if (screen === 'profile') loadProfile();
+}
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => navigate(item.dataset.nav));
+});
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  const user = JSON.parse(localStorage.getItem('krishi_user') || '{}');
+  const location = user.location || 'Hyderabad';
+  try {
+    const weather = await api.getWeather(location);
+    document.getElementById('weatherWidget').innerHTML = `
+      <div class="weather-main">
+        <div style="font-size:40px">${getWeatherEmoji(weather.weather_condition)}</div>
+        <div>
+          <div class="weather-temp">${Math.round(weather.temperature)}°C</div>
+          <div class="weather-detail">${weather.weather_description} • ${weather.location}</div>
+        </div>
+      </div>
+      <div class="weather-grid">
+        <div class="weather-item"><div class="val">${weather.humidity}%</div><div class="lbl">Humidity</div></div>
+        <div class="weather-item"><div class="val">${weather.wind_speed} km/h</div><div class="lbl">Wind</div></div>
+        <div class="weather-item"><div class="val">${weather.rainfall_mm || 0}mm</div><div class="lbl">Rain</div></div>
+        <div class="weather-item"><div class="val">${weather.uv_index || '--'}</div><div class="lbl">UV</div></div>
+      </div>`;
+  } catch {
+    document.getElementById('weatherWidget').innerHTML = `<p style="color:var(--muted)">Weather unavailable</p>`;
+  }
+
+  try {
+    const advice = await api.getFarmingAdvice(location);
+    let alertsHtml = '';
+    if (advice.alerts && advice.alerts.length) {
+      advice.alerts.forEach(a => {
+        alertsHtml += `<div class="alert-item">
+          <div class="alert-icon" style="background:rgba(253,203,110,.15)">⚠️</div>
+          <div class="alert-text"><div class="title">${a}</div></div>
+        </div>`;
+      });
+    }
+    if (advice.farming_advice) {
+      alertsHtml += `<div class="alert-item">
+        <div class="alert-icon" style="background:var(--accent-bg)">🌾</div>
+        <div class="alert-text"><div class="title">Farming Advice</div><div class="desc">${advice.farming_advice}</div></div>
+      </div>`;
+    }
+    document.getElementById('alertsContainer').innerHTML = alertsHtml || '<p style="color:var(--muted);padding:12px">No alerts</p>';
+  } catch {
+    document.getElementById('alertsContainer').innerHTML = '';
+  }
+}
+
+function getWeatherEmoji(condition) {
+  const map = { Clear: '☀️', Clouds: '☁️', Rain: '🌧️', Drizzle: '🌦️', Thunderstorm: '⛈️', Snow: '❄️', Mist: '🌫️', Fog: '🌫️', Haze: '🌫️' };
+  return map[condition] || '🌤️';
+}
+
+// ===== DISEASE DETECTION =====
+async function loadDiseaseHistory() {
+  try {
+    const reports = await api.getDiseaseReports(0, 5);
+    const container = document.getElementById('scanHistory');
+    if (reports.length === 0) {
+      container.innerHTML = `<div class="section-label">Recent Scans</div><p style="color:var(--muted);font-size:14px">No scans yet. Upload a photo above.</p>`;
+      return;
+    }
+    let html = `<div class="section-label">Recent Scans</div>`;
+    reports.forEach(r => {
+      const sev = r.severity === 'high' ? 'danger' : r.severity === 'medium' ? 'warn' : 'success';
+      html += `<div class="result-card" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:24px">🌿</div>
+        <div style="flex:1">
+          <div class="result-name" style="font-size:14px">${r.disease_name || 'Unknown'}</div>
+          <div class="result-confidence">${Math.round((r.confidence_score||0)*100)}% • ${timeAgo(r.created_at)}</div>
+        </div>
+        <span class="badge badge-${sev}">${r.severity||'low'}</span>
+      </div>`;
+    });
+    container.innerHTML = html;
+  } catch {
+    document.getElementById('scanHistory').innerHTML = `<div class="section-label">Recent Scans</div><p style="color:var(--muted)">Login to view history</p>`;
+  }
+}
+
+function handlePhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('uploadArea').innerHTML = '<div style="text-align:center;padding:16px"><div class="spinner" style="width:40px;height:40px"></div><p style="margin-top:8px;color:var(--muted)">Uploading...</p></div>';
+  document.getElementById('scanResult').style.display = 'none';
+  document.getElementById('scanLoading').style.display = 'block';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  api.detectDisease(formData).then(result => {
+    document.getElementById('scanLoading').style.display = 'none';
+    document.getElementById('uploadArea').innerHTML = `<div style="text-align:center;padding:16px">
+      <div style="font-size:24px">🌿</div>
+      <p style="font-size:13px;color:var(--muted)">${file.name}</p>
+      <p style="font-size:12px;color:var(--accent);cursor:pointer;margin-top:8px" onclick="document.getElementById('photoInput').click()">Upload another</p>
+    </div>`;
+    const sev = result.severity === 'high' ? 'danger' : result.severity === 'medium' ? 'warn' : 'success';
+    const sevColor = result.severity === 'high' ? '#EF4444' : result.severity === 'medium' ? '#F59E0B' : '#10B981';
+    document.getElementById('scanResult').innerHTML = `
+      <div class="result-card">
+        <div class="result-header"><div class="status-dot ${sev}"></div>
+          <div><div class="result-name">${result.disease_name||'Unknown'}</div>
+          <div class="result-confidence">Confidence: ${Math.round((result.confidence_score||0)*100)}%</div></div>
+        </div>
+        <span class="badge badge-${sev}" style="background:${sevColor}22;color:${sevColor}">${result.severity||'low'} — ${result.severity === 'high' ? 'Immediate action' : result.severity === 'medium' ? 'Treatable' : 'Monitor'}</span>
+      </div>
+      <div class="result-card">
+        <div class="card-title">Recommended Treatment</div>
+        <ul class="treatment-list">
+          ${result.treatment_recommended ? `<li>${result.treatment_recommended}</li>` : ''}
+          ${result.organic_treatment ? `<li>🌿 Organic: ${result.organic_treatment}</li>` : ''}
+          ${result.chemical_treatment ? `<li>🧪 Chemical: ${result.chemical_treatment}</li>` : ''}
+        </ul>
+      </div>`;
+    document.getElementById('scanResult').style.display = 'block';
+    loadDiseaseHistory();
+  }).catch(err => {
+    document.getElementById('scanLoading').style.display = 'none';
+    document.getElementById('uploadArea').innerHTML = `<div style="text-align:center;padding:16px">
+      <div style="font-size:24px">❌</div>
+      <p style="font-size:14px;color:var(--danger)">${err.message}</p>
+      <p style="font-size:12px;color:var(--accent);cursor:pointer;margin-top:8px" onclick="document.getElementById('photoInput').click()">Try again</p>
+    </div>`;
+  });
+}
+
+function timeAgo(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const s = Math.floor((now - d) / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// ===== CHATBOT =====
+let chatLoading = false;
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || chatLoading) return;
+  input.value = '';
+  chatLoading = true;
+  document.getElementById('chatSendBtn').disabled = true;
+
+  const box = document.getElementById('chatBox');
+  box.innerHTML += `<div class="chat-msg user">${escapeHtml(text)}</div>`;
+  box.scrollTop = box.scrollHeight;
+
+  const thinkingMsg = document.createElement('div');
+  thinkingMsg.className = 'chat-msg bot';
+  thinkingMsg.innerHTML = '<div class="spinner"></div>';
+  box.appendChild(thinkingMsg);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    const lang = getCurrentLang();
+    const result = await api.chat({ message: text, session_id: chatSessionId, language: lang, include_weather: true });
+    thinkingMsg.remove();
+    box.innerHTML += `<div class="chat-msg bot">${escapeHtml(result.response)}</div>`;
+  } catch {
+    thinkingMsg.remove();
+    box.innerHTML += `<div class="chat-msg bot" style="background:rgba(225,112,85,.1);color:#c0392b">Sorry, couldn't process. Check your connection.</div>`;
+  }
+  box.scrollTop = box.scrollHeight;
+  chatLoading = false;
+  document.getElementById('chatSendBtn').disabled = false;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ===== VOICE =====
+let isListening = false;
+let voiceLang = 'en';
+
+function setVoiceLang(lang, btn) {
+  voiceLang = lang;
+  document.querySelectorAll('.voice-lang-btns button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function toggleVoice() {
+  const btn = document.getElementById('voiceBtn');
+  const status = document.getElementById('voiceStatus');
+  isListening = !isListening;
+  btn.classList.toggle('listening', isListening);
+
+  if (isListening) {
+    status.textContent = '🎙️ Listening...';
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = voiceLang === 'te' ? 'te-IN' : voiceLang === 'hi' ? 'hi-IN' : 'en-IN';
+      recognition.interimResults = true;
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+        document.getElementById('transcriptBox').textContent = transcript;
+      };
+      recognition.onend = async () => {
+        btn.classList.remove('listening');
+        isListening = false;
+        const text = document.getElementById('transcriptBox').textContent;
+        if (text && !text.includes('speech will appear')) {
+          await processVoiceText(text);
+        } else {
+          status.textContent = 'Tap to start again';
+        }
+      };
+      recognition.start();
+      window._recognition = recognition;
+    } else {
+      setTimeout(async () => {
+        const text = voiceLang === 'te' ? 'వరి పంటకు ఎరువులు ఏమిటి?' : voiceLang === 'hi' ? 'धान की फसल के लिए खाद क्या है?' : 'What fertilizer for rice?';
+        document.getElementById('transcriptBox').textContent = text;
+        btn.classList.remove('listening');
+        isListening = false;
+        await processVoiceText(text);
+      }, 3000);
+    }
+  } else {
+    if (window._recognition) { window._recognition.stop(); window._recognition = null; }
+    status.textContent = 'Tap to start';
+  }
+}
+
+async function processVoiceText(text) {
+  document.getElementById('voiceStatus').textContent = 'Processing...';
+  try {
+    const result = await api.chat({ message: text, session_id: 'voice_' + Date.now(), language: voiceLang, include_weather: true });
+    document.getElementById('voiceResponseText').innerHTML = `<strong>You:</strong> ${escapeHtml(text)}<br><br><strong>KrishiAI:</strong> ${escapeHtml(result.response)}`;
+    document.getElementById('voiceResult').style.display = 'block';
+    document.getElementById('voiceStatus').textContent = '✅ Done';
+  } catch {
+    document.getElementById('voiceResponseText').textContent = 'Sorry, could not process voice.';
+    document.getElementById('voiceResult').style.display = 'block';
+    document.getElementById('voiceStatus').textContent = '❌ Error';
+  }
+}
+
+// ===== CROPS =====
+function loadCropData() {
+  const user = JSON.parse(localStorage.getItem('krishi_user') || '{}');
+  if (user.soil_type) document.getElementById('cropSoilType').value = user.soil_type;
+  if (user.location) document.getElementById('cropLocation').value = user.location;
+  document.getElementById('cropResults').style.display = 'none';
+  document.getElementById('cropLoading').style.display = 'none';
+  document.getElementById('cropFormCard').style.display = 'block';
+}
+
+async function submitCropForm() {
+  const data = {
+    soil_type: document.getElementById('cropSoilType').value,
+    ph_level: parseFloat(document.getElementById('cropPh').value),
+    rainfall_mm: parseFloat(document.getElementById('cropRainfall').value),
+    temperature: parseFloat(document.getElementById('cropTemp').value),
+    season: document.getElementById('cropSeason').value,
+    location: document.getElementById('cropLocation').value.trim(),
+  };
+
+  const btn = document.getElementById('cropSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = getLangText('Analyzing...', 'విశ్లేషిస్తోంది...', 'विश्लेषण कर रहा है...');
+
+  document.getElementById('cropLoading').style.display = 'block';
+  document.getElementById('cropResults').style.display = 'none';
+  document.getElementById('cropRecommendations').innerHTML = '';
+  document.getElementById('yieldCard').innerHTML = '<div style="text-align:center;padding:12px"><div class="spinner"></div></div>';
+
+  try {
+    const [recResult, yieldResult] = await Promise.all([
+      api.getCropRecommendations(data),
+      api.predictYield({ crop_name: 'Rice', area_hectares: 1.0, soil_type: data.soil_type })
+    ]);
+
+    document.getElementById('cropLoading').style.display = 'none';
+    document.getElementById('cropResults').style.display = 'block';
+
+    if (!recResult.recommendations || recResult.recommendations.length === 0) {
+      document.getElementById('cropRecommendations').innerHTML = '<p style="color:var(--muted)">No recommendations for these parameters.</p>';
+    } else {
+      let html = '';
+      recResult.recommendations.forEach(c => {
+        const risk = c.risk_score > 0.5 ? 'high' : c.risk_score > 0.3 ? 'med' : 'low';
+        const icons = { 'Rice':'🌾', 'Maize':'🌽', 'Wheat':'🌾', 'Sugarcane':'🎋', 'Cotton':'🌿', 'Groundnut':'🥜', 'Tomato':'🍅', 'Potato':'🥔', 'Chilli':'🌶️', 'Onion':'🧅' };
+        html += `<div class="crop-card">
+          <div class="crop-icon" style="background:var(--accent-bg)">${icons[c.crop_name] || '🌱'}</div>
+          <div class="crop-info"><h4>${c.crop_name}</h4><p>${Math.round(c.confidence_score * 100)}% match • ${c.growing_period_days || '--'} days</p></div>
+          <div class="crop-profit"><div class="val">₹${(c.profitability_estimate||0).toLocaleString()}</div><div class="lbl">Est. Profit</div></div>
+          <span class="crop-risk ${risk}">${risk} risk</span>
+        </div>`;
+      });
+      document.getElementById('cropRecommendations').innerHTML = html;
+    }
+
+    document.getElementById('yieldCard').innerHTML = `
+      <div class="row" style="margin-bottom:12px">
+        <div><div class="card-value">${(yieldResult.predicted_yield_per_hectare/1000).toFixed(1)} t/ha</div><div class="card-label">Predicted Yield</div></div>
+        <div><div class="card-value" style="color:var(--success)">${Math.round(yieldResult.weather_impact_score*100)}%</div><div class="card-label">Weather Impact</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">
+        <span>Low: ${(yieldResult.confidence_interval_lower/1000).toFixed(1)}t</span>
+        <span>Est: ${(yieldResult.predicted_yield_kg/1000).toFixed(1)}t</span>
+        <span>High: ${(yieldResult.confidence_interval_upper/1000).toFixed(1)}t</span>
+      </div>`;
+  } catch {
+    document.getElementById('cropLoading').style.display = 'none';
+    document.getElementById('cropResults').style.display = 'block';
+    document.getElementById('cropRecommendations').innerHTML = '<p style="color:var(--muted)">Login to get recommendations</p>';
+    document.getElementById('yieldCard').innerHTML = '<p style="color:var(--muted)">Yield prediction unavailable.</p>';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span data-lang="en">Get Recommendations</span><span data-lang="te">సిఫార్సులు పొందండి</span><span data-lang="hi">सिफारिशें प्राप्त करें</span>';
+  }
+}
+
+// ===== PROFILE =====
+async function loadProfile() {
+  try {
+    const profile = await api.getProfile();
+    localStorage.setItem('krishi_user', JSON.stringify(profile));
+    document.getElementById('profileHeader').innerHTML = `
+      <div class="profile-avatar">👨‍🌾</div>
+      <div class="profile-name">${profile.full_name}</div>
+      <div class="profile-email">${profile.email}</div>`;
+    try {
+      const [reports, sessions, yields] = await Promise.all([
+        api.getDiseaseReports(0, 1).catch(() => ({ length: 0 })),
+        api.getChatSessions().catch(() => []),
+        api.getYieldHistory().catch(() => []),
+      ]);
+      document.getElementById('profileStats').innerHTML = `
+        <div class="profile-stat"><div class="num">${Array.isArray(reports) ? reports.length : '0'}</div><div class="lbl">Scans</div></div>
+        <div class="profile-stat"><div class="num">${sessions.length || '0'}</div><div class="lbl">Chats</div></div>
+        <div class="profile-stat"><div class="num">${Array.isArray(yields) ? yields.length : '0'}</div><div class="lbl">Predictions</div></div>`;
+    } catch {}
+  } catch {
+    document.getElementById('profileHeader').innerHTML = `<p style="color:var(--muted)">Please sign in</p>`;
+  }
+}
+
+// ===== OFFLINE DETECTION =====
+function updateOnlineStatus() {
+  const banner = document.getElementById('offlineBanner');
+  banner.classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ===== HELPERS =====
+function getLangText(en, te, hi) {
+  const lang = getCurrentLang();
+  if (lang === 'te') return te;
+  if (lang === 'hi') return hi;
+  return en;
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
