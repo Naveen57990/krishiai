@@ -6,8 +6,10 @@ from fastapi import UploadFile, HTTPException, status
 from app.repositories.disease_repository import DiseaseReportRepository
 from app.models.disease_report import DiseaseReport
 from app.core.config import settings
-from PIL import Image
 import io
+import importlib
+
+PILLOW_AVAILABLE = importlib.util.find_spec("PIL") is not None
 
 
 class DiseaseService:
@@ -24,22 +26,26 @@ class DiseaseService:
         if len(contents) > settings.MAX_UPLOAD_SIZE:
             raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="Image too large")
 
-        try:
-            image = Image.open(io.BytesIO(contents))
-            image.verify()
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image file")
-
         ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
         filename = f"{uuid.uuid4()}{ext}"
         upload_path = os.path.join(settings.UPLOAD_DIR, "diseases")
         os.makedirs(upload_path, exist_ok=True)
         filepath = os.path.join(upload_path, filename)
 
-        image = Image.open(io.BytesIO(contents))
-        if image.mode != "RGB":
-            image = image.convert("RGB")
-        image.save(filepath, optimize=True, quality=85)
+        if PILLOW_AVAILABLE:
+            from PIL import Image
+            try:
+                img = Image.open(io.BytesIO(contents))
+                img.verify()
+                img = Image.open(io.BytesIO(contents))
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+                img.save(filepath, optimize=True, quality=85)
+            except Exception:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image file")
+        else:
+            with open(filepath, "wb") as f:
+                f.write(contents)
 
         image_url = f"/uploads/diseases/{filename}"
 
