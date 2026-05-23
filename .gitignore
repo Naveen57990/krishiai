@@ -67,3 +67,4 @@ coverage.xml
 infrastructure/terraform/.terraform/
 infrastructure/terraform/terraform.tfstate*
 infrastructure/terraform/*.tfvars
+"Other-*"
