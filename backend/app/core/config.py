@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
 
-    DATABASE_URL: str = "postgresql+asyncpg://krishiai:krishiai@db:5432/krishiai"
-    DATABASE_URL_SYNC: str = "postgresql://krishiai:krishiai@db:5432/krishiai"
+    DATABASE_URL: str = "postgresql+psycopg://krishiai:krishiai@db:5432/krishiai"
+    DATABASE_URL_SYNC: str = "postgresql+psycopg://krishiai:krishiai@db:5432/krishiai"
 
     SECRET_KEY: str = "super-secret-key-change-in-production-min-32-chars"
     ALGORITHM: str = "HS256"
